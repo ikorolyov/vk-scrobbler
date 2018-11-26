@@ -1,0 +1,4 @@
+Application name	vk_scrobbler
+API key	9f046188eba9b6abcc122d822799c46d
+Shared secret	bfb6ee84ccd03cc3106c13f31e95ac46
+Registered to	pleasehushnow
