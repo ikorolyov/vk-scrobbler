@@ -1,56 +1,44 @@
-chrome.runtime.onInstalled.addListener(function () {
-    //alert('Oi!');
+(function () {
 
-    function _log(str, obj) { chrome.extension.getBackgroundPage().console.log(str, obj || null); };
-    function _save(obj) { chrome.storage.local.set(obj, function () { _log("Data saved! (background) ", obj); }); }; 
+    var lastFmAuthUrl = "www.last.fm/api/auth?api_key=0e593acc98ed557d04c6e931b9d3bea5";
 
-    // 1. Ruls initialization
- /*   var declarativeContentRules = [{
-        conditions: [
-            new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: { hostEquals: "vk.com" }
-            })
-        ],
-        actions: [new chrome.declarativeContent.ShowPageAction()]
-    }];
+    chrome.runtime.onInstalled.addListener(function () {
 
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
-        chrome.declarativeContent.onPageChanged.addRules(declarativeContentRules);
-    });*/
+        // 1. Ruls initialization (if 'page_action')
+        /*   var declarativeContentRules = [{
+               conditions: [
+                   new chrome.declarativeContent.PageStateMatcher({
+                       pageUrl: { hostEquals: "vk.com" }
+                   })
+               ],
+               actions: [new chrome.declarativeContent.ShowPageAction()]
+           }];
+       
+           chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
+               chrome.declarativeContent.onPageChanged.addRules(declarativeContentRules);
+           });*/
 
-    // 2. Tabs update listening
-    chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-
-        chrome.storage.local.set({"a": "b"}, function () {
-
-            _log("bl");
-          });
-          
-        _log("-- tabs update", { changeInfo: changeInfo, tab: tab });
-
-        if (!changeInfo.url || !tab.id || !tab.url) return;
-
-        _log("-- valid tabs update");
-
-        chrome.storage.local.get(["lastFmAuthUrl", "lastFmAuthTabId"], function (data) {
+        // 2. Tabs update listening
+        var authPageOpened = false;
+        var token = null;
+        chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             
-            _log("-- try get data", data);
+            if (changeInfo.url && tab.url &&
+                changeInfo.url.indexOf(lastFmAuthUrl) > 0 && tab.url.indexOf(lastFmAuthUrl) > 0) authPageOpened = true;
+            if (authPageOpened == true && token == null) {
+                var tokenUrl = changeInfo.url || "";
+                var tokenStartInd = tokenUrl.lastIndexOf("?token=");
+                if (tokenStartInd > 0 && tokenStartInd + 8 < tokenUrl.length) token = tokenUrl.substring(tokenStartInd + 7);
+                if (token != null) {
+                    chrome.storage.local.set({ lastFmToken: token }, function() {
+                        console.log("Token saved: ", token);
 
-            if (!data.lastFmAuthUrl || !data.lastFmAuthTabId || tab.id != data.lastFmAuthTabId) return;
-
-            _log("Last fm auth page data found (background)!");
-            
-            var authUrl = data.lastFmAuthUrl;
-            var tokenStartInd = authUrl.lastIndexOf("?token=");
-            if (tokenStartInd > 0) {
-                var token = authUrl.substring(tokenStartInd + 7);
-                if (token) _save({ lastFmUserToken: token });
+                    });
+                }
             }
-
-
         });
+
 
     });
 
-
-});
+})();

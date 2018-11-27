@@ -1,24 +1,15 @@
+(function () {
+    
+    function _log(str) { chrome.extension.getBackgroundPage().console.log(str); };
 
-
-    function _log(str, obj) { chrome.extension.getBackgroundPage().console.log(str, obj || null); };
-    function _save(obj) {
-        
-    };
-
-
-    var lastFmAuthBaseUrl = "http://www.last.fm/api/auth/?api_key";
-    var publicApiKey = "9f046188eba9b6abcc122d822799c46d";
-
+    var lastFmAuthUrl = "http://www.last.fm/api/auth?api_key=0e593acc98ed557d04c6e931b9d3bea5";
     var connectButton = document.getElementById("connectButton");
-
     connectButton.onclick = function () {
-        
-
-
-        chrome.tabs.create({ url: lastFmAuthBaseUrl + "=" + publicApiKey }, function (tab) {
-         
+        chrome.tabs.create({ url: lastFmAuthUrl }, function (tab) {
             _log("Tab created (" + tab.url + ")");
         });
     };
+})();
+
 
 
